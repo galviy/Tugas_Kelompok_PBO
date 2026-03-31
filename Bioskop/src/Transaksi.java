@@ -4,6 +4,7 @@ public class Transaksi implements Pembayaran {
     private Customer pembeli;
     private Tiket[] tiketDibeli;
     private int jumlahTiket;
+    private int max_tiket;
     
     // konstruktor tanpa parameter
     public Transaksi(){}
@@ -13,6 +14,7 @@ public class Transaksi implements Pembayaran {
         this.idTransaksi = idTransaksi;
         this.pembeli = pembeli;
         this.tiketDibeli = new Tiket[maksimalTiket];
+        this.max_tiket = maksimalTiket;
         this.jumlahTiket = 0;
     }
 
@@ -51,6 +53,7 @@ public class Transaksi implements Pembayaran {
     }
 
     // method dengan try-catch (versi lama DIHAPUS)
+    //optimalisasi dengan binary search untuk searching lebih cepat kedepannya. 
     public void tambahTiket(Tiket tiketBaru) {
         try {
             if (tiketBaru == null) {
@@ -62,7 +65,33 @@ public class Transaksi implements Pembayaran {
             if (jumlahTiket >= tiketDibeli.length) {
                 throw new ArrayIndexOutOfBoundsException("Kapasitas transaksi penuh! Maksimal: " + tiketDibeli.length);
             }
-            tiketDibeli[jumlahTiket] = tiketBaru;
+            int low = 0;
+            int high = jumlahTiket-1;
+            int posisiInput = jumlahTiket;
+            
+             while(low <= high){
+                int mid = low + (high - low) / 2;
+                String idMid = tiketDibeli[mid].getIdTiket();
+                String idBaru = tiketBaru.getIdTiket();
+
+                int hasilBanding = idMid.compareTo(idBaru);
+                if (hasilBanding == 0) {
+                    throw new IllegalArgumentException(idBaru + " sudah exist!");
+                }
+                if (hasilBanding < 0) {
+                    low = mid + 1;
+                }
+                else {
+                    high = mid - 1;
+                    posisiInput = mid;
+                }
+            }
+
+            for (int i = jumlahTiket; i > posisiInput; i--) {
+                tiketDibeli[i] = tiketDibeli[i - 1];
+            }
+            
+            tiketDibeli[posisiInput] = tiketBaru;
             jumlahTiket++;
             System.out.println("[OK] Tiket " + tiketBaru.getIdTiket() + " berhasil ditambahkan.");
 
